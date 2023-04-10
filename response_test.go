@@ -134,7 +134,7 @@ func TestReadJSON(t *testing.T) {
 					t.Fatal(err)
 				}
 
-				resp, err := client.Do(req)
+				resp, err := client.Do(context.Background(), req)
 				if err != nil {
 					t.Fatal(err)
 				}
