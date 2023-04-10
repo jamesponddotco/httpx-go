@@ -173,6 +173,7 @@ func (c *Client) initClient() {
 	}
 }
 
+// setUserAgent sets the User-Agent header if it's not already set.
 func (c *Client) setUserAgent(req *Request) {
 	if req.Req.Header.Get("User-Agent") == "" {
 		req.Req.Header.Set("User-Agent", c.UserAgent.String())
