@@ -59,13 +59,8 @@ func DefaultClient() *Client {
 }
 
 func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
-	if c.client == nil {
-		c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
-	}
-
-	if c.client.Timeout == 0 && c.Timeout != 0 {
-		c.client.Timeout = c.Timeout
-	}
+	c.initClient()
+	c.setUserAgent(req)
 
 	var (
 		resp *http.Response
@@ -80,10 +75,6 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 		if resp != nil && err == nil {
 			return resp, nil
 		}
-	}
-
-	if req.Req.Header.Get("User-Agent") == "" {
-		req.Req.Header.Set("User-Agent", c.UserAgent.String())
 	}
 
 	for i := 0; i < c.RetryPolicy.MaxRetries; i++ {
@@ -168,4 +159,22 @@ func (c *Client) Post(ctx context.Context, uri, contentType string, body io.Read
 // PostForm is a convenience method for making POST requests with form data.
 func (c *Client) PostForm(ctx context.Context, uri string, data url.Values) (resp *http.Response, err error) {
 	return c.Post(ctx, uri, _mediaTypeFormURLEncoded, strings.NewReader(data.Encode()))
+}
+
+// initClient initializes the underlying http.Client if none has been set and
+// set the timeout if it's not zero.
+func (c *Client) initClient() {
+	if c.client == nil {
+		c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
+	}
+
+	if c.client.Timeout == 0 && c.Timeout != 0 {
+		c.client.Timeout = c.Timeout
+	}
+}
+
+func (c *Client) setUserAgent(req *Request) {
+	if req.Req.Header.Get("User-Agent") == "" {
+		req.Req.Header.Set("User-Agent", c.UserAgent.String())
+	}
 }
