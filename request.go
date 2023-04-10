@@ -15,6 +15,9 @@ const (
 	// ErrRequest is returned when a request cannot be created.
 	ErrRequest xerrors.Error = "unable to create request"
 
+	// ErrInvalidMethod is returned when an invalid HTTP method is provided.
+	ErrInvalidMethod xerrors.Error = "invalid HTTP method"
+
 	// ErrIdempotencyKey is returned when an idempotency key is not provided and a
 	// random one cannot be generated.
 	ErrIdempotencyKey xerrors.Error = "unable to generate idempotency key"
@@ -30,6 +33,31 @@ type Request struct {
 // NewRequest returns a new Request given a method, URL, and optional headers
 // and body.
 func NewRequest(ctx context.Context, method, url string, headers map[string]string, body io.Reader) (*Request, error) {
+	validMethods := []string{
+		http.MethodGet,
+		http.MethodHead,
+		http.MethodPost,
+		http.MethodPut,
+		http.MethodPatch,
+		http.MethodDelete,
+		http.MethodConnect,
+		http.MethodOptions,
+		http.MethodTrace,
+	}
+
+	isValidMethod := false
+
+	for _, validMethod := range validMethods {
+		if method == validMethod {
+			isValidMethod = true
+			break
+		}
+	}
+
+	if !isValidMethod {
+		return nil, fmt.Errorf("%w: %w %s", ErrRequest, ErrInvalidMethod, method)
+	}
+
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
