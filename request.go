@@ -51,7 +51,7 @@ func (r *Request) SetBearerToken(token string) {
 // requests with the given key. If no key is provided, a random one is
 // generated using a V4 UUID.
 func (r *Request) SetIdempotencyKey(key string) error {
-	if key == strings.TrimSpace(key) {
+	if strings.TrimSpace(key) == "" {
 		uuid, err := xuuid.New()
 		if err != nil {
 			return fmt.Errorf("%w: %w", ErrIdempotencyKey, err)
