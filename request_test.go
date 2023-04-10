@@ -25,13 +25,13 @@ func TestNewRequest(t *testing.T) {
 	}{
 		{
 			name:   "valid request",
-			method: "GET",
+			method: http.MethodGet,
 			url:    "https://example.com",
 			headers: map[string]string{
 				"Content-Type": "application/json",
 			},
 			want: &http.Request{
-				Method: "GET",
+				Method: http.MethodGet,
 				URL: &url.URL{
 					Scheme: "https",
 					Host:   "example.com",
@@ -53,7 +53,7 @@ func TestNewRequest(t *testing.T) {
 		},
 		{
 			name:    "invalid url",
-			method:  "GET",
+			method:  http.MethodGet,
 			url:     "::",
 			headers: nil,
 			body:    nil,
@@ -64,6 +64,7 @@ func TestNewRequest(t *testing.T) {
 
 	for _, tt := range testCases {
 		tt := tt
+
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -115,25 +116,25 @@ func TestSetIdempotencyKey(t *testing.T) {
 	}{
 		{
 			name:   "valid POST",
-			method: "POST",
+			method: http.MethodPost,
 			key:    "",
 			err:    nil,
 		},
 		{
 			name:   "valid PATCH",
-			method: "PATCH",
+			method: http.MethodPatch,
 			key:    "",
 			err:    nil,
 		},
 		{
 			name:   "valid non-POST non-PATCH",
-			method: "GET",
+			method: http.MethodGet,
 			key:    "",
 			err:    nil,
 		},
 		{
 			name:   "valid custom key",
-			method: "POST",
+			method: http.MethodPost,
 			key:    "custom-idempotency-key",
 			err:    nil,
 		},
@@ -141,6 +142,7 @@ func TestSetIdempotencyKey(t *testing.T) {
 
 	for _, tt := range testCases {
 		tt := tt
+
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -169,10 +171,8 @@ func TestSetIdempotencyKey(t *testing.T) {
 						t.Errorf("got Idempotency-Key header %q, want %q", got, tt.key)
 					}
 				}
-			} else {
-				if req.Req.Header.Get("Idempotency-Key") != "" {
-					t.Error("expected empty Idempotency-Key header for non-POST and non-PATCH methods")
-				}
+			} else if req.Req.Header.Get("Idempotency-Key") != "" {
+				t.Error("expected empty Idempotency-Key header for non-POST and non-PATCH methods")
 			}
 		})
 	}
