@@ -58,7 +58,7 @@ func DefaultClient() *Client {
 	}
 }
 
-func (c *Client) Do(req *Request) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 	if c.client == nil {
 		c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
 	}
@@ -76,7 +76,7 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 	if c.Cache != nil {
 		key = pagecache.Key(build.Name, req.Req)
 
-		resp, err = c.Cache.Get(context.Background(), key)
+		resp, err = c.Cache.Get(ctx, key)
 		if resp != nil && err == nil {
 			return resp, nil
 		}
@@ -140,7 +140,7 @@ func (c *Client) Get(ctx context.Context, uri string) (resp *http.Response, err 
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	return c.Do(req)
+	return c.Do(ctx, req)
 }
 
 // Head is a convenience method for making HEAD requests.
@@ -150,7 +150,7 @@ func (c *Client) Head(ctx context.Context, uri string) (resp *http.Response, err
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	return c.Do(req)
+	return c.Do(ctx, req)
 }
 
 // Post is a convenience method for making POST requests.
@@ -162,7 +162,7 @@ func (c *Client) Post(ctx context.Context, uri, contentType string, body io.Read
 
 	req.Req.Header.Set("Content-Type", contentType)
 
-	return c.Do(req)
+	return c.Do(ctx, req)
 }
 
 // PostForm is a convenience method for making POST requests with form data.
