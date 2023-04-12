@@ -1,4 +1,8 @@
-git.sr.ht/~jamesponddotco/xstd-go v0.0.0-20230326035751-d551afedd6e5 h1:CmlkJe7bYvIoMLStbK5ehrRgDYqJdq99pMfYeORUVxU=
-git.sr.ht/~jamesponddotco/xstd-go v0.0.0-20230326035751-d551afedd6e5/go.mod h1:zU/LY2+XYCYYqDzThtdAdJgmgSNJBD4Jf/21NG0eH2o=
+git.sr.ht/~jamesponddotco/pagecache-go v0.0.0-20230411150210-54b704d32088 h1:LKK7NuFKNBduMQkhg/Q4vSOtDGc8BIKh8gwmsStrIME=
+git.sr.ht/~jamesponddotco/pagecache-go v0.0.0-20230411150210-54b704d32088/go.mod h1:/EPCk+d5n5/uv92yVu9qJ8HhhNMqibbgGeFIUzP3k14=
+git.sr.ht/~jamesponddotco/recache-go v1.0.1 h1:O9S7SdGyMh4mD+Vom0WOkY45EhJJHDRBlvVpzcL16sM=
+git.sr.ht/~jamesponddotco/recache-go v1.0.1/go.mod h1:oF6LkAuwZYQqHe8+G/4hP9ZSNyDjAk6J8qhuy44wXw0=
+git.sr.ht/~jamesponddotco/xstd-go v0.0.0-20230409194931-7d4d783b26b2 h1:hRc9J2uAbMf0AK4dj7jV9JsZep/U3Kqq+Qrp4DyaYAk=
+git.sr.ht/~jamesponddotco/xstd-go v0.0.0-20230409194931-7d4d783b26b2/go.mod h1:zU/LY2+XYCYYqDzThtdAdJgmgSNJBD4Jf/21NG0eH2o=
 golang.org/x/time v0.3.0 h1:rg5rLMjNzMS1RkNLzCG38eapWhnYLFYXDXj2gOlr8j4=
 golang.org/x/time v0.3.0/go.mod h1:tRJNPiyCQ0inRvYxbN9jk5I+vvW/OXSQhTDSoE431IQ=
