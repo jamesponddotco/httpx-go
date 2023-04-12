@@ -52,7 +52,7 @@ func TestReadJSON(t *testing.T) {
 	t.Parallel()
 
 	var (
-		client = httpx.DefaultClient()
+		client = httpx.NewClientWithCache(nil)
 		header = map[string]string{
 			"Accept": "application/json",
 		}
@@ -213,7 +213,7 @@ func TestDrainResponseBody(t *testing.T) {
 func TestIsSuccess(t *testing.T) {
 	t.Parallel()
 
-	client := httpx.DefaultClient()
+	client := httpx.NewClientWithCache(nil)
 
 	tests := []struct {
 		name string

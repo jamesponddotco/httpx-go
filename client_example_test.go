@@ -9,7 +9,7 @@ import (
 )
 
 func ExampleClient_Get() {
-	client := httpx.DefaultClient()
+	client := httpx.NewClientWithCache(nil)
 
 	resp, err := client.Get(context.Background(), "https://example.com/")
 	if err != nil {

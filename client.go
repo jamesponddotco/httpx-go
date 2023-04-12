@@ -48,14 +48,29 @@ type Client struct {
 	Timeout time.Duration
 }
 
-func DefaultClient() *Client {
+// NewClient returns a new Client with default settings.
+func NewClient() *Client {
 	return &Client{
 		client:      httpclient.NewClient(DefaultTimeout, DefaultTransport()),
 		RateLimiter: rate.NewLimiter(rate.Limit(2), 1),
 		RetryPolicy: DefaultRetryPolicy(),
 		UserAgent:   DefaultUserAgent(),
-		Cache:       memorycachex.NewCache(pagecache.DefaultPolicy(), pagecache.DefaultCapacity),
 	}
+}
+
+// NewClientWithCache returns a new Client with default settings and a storage
+// mechanism for caching HTTP responses.
+//
+// If cache is nil, a default in-memory cache will be used.
+func NewClientWithCache(cache pagecache.Cache) *Client {
+	if cache == nil {
+		cache = memorycachex.NewCache(pagecache.DefaultPolicy(), pagecache.DefaultCapacity)
+	}
+
+	c := NewClient()
+	c.Cache = cache
+
+	return c
 }
 
 func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
