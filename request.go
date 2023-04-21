@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"git.sr.ht/~jamesponddotco/httpx-go/internal/separator"
 	"git.sr.ht/~jamesponddotco/xstd-go/xcrypto/xuuid"
 	"git.sr.ht/~jamesponddotco/xstd-go/xerrors"
 )
@@ -73,6 +74,11 @@ func NewRequest(ctx context.Context, method, url string, headers map[string]stri
 // SetBearerToken sets the Authorization header to use the given bearer token.
 func (r *Request) SetBearerToken(token string) {
 	r.Req.Header.Set("Authorization", "Bearer "+token)
+}
+
+// SetPrefixToken sets the Authorization header to use the given prefix token.
+func (r *Request) SetPrefixToken(prefix, token string) {
+	r.Req.Header.Set("Authorization", prefix+separator.Space+token)
 }
 
 // SetIdempotencyKey sets the Idempotency-Key header for POST and PATCH
