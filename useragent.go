@@ -41,6 +41,10 @@ func DefaultUserAgent() *UserAgent {
 
 // String returns the string representation of the User-Agent header value.
 func (ua *UserAgent) String() string {
+	if ua == nil || ua.Token == "" || ua.Version == "" {
+		return ""
+	}
+
 	var builder strings.Builder
 
 	token := ua.Token
