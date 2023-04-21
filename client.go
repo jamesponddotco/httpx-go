@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"git.sr.ht/~jamesponddotco/httpx-go/internal/build"
@@ -46,6 +47,9 @@ type Client struct {
 	// Timeout is the timeout for all requests made by the client, overriding
 	// the default value set in the underlying http.Client.
 	Timeout time.Duration
+
+	// mu is a mutex for initializing the client.
+	mu sync.Mutex
 }
 
 // NewClient returns a new Client with default settings.
@@ -179,6 +183,9 @@ func (c *Client) PostForm(ctx context.Context, uri string, data url.Values) (res
 // initClient initializes the underlying http.Client if none has been set and
 // set the timeout if it's not zero.
 func (c *Client) initClient() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	if c.client == nil {
 		c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
 	}
