@@ -64,9 +64,13 @@ func NewRequest(ctx context.Context, method, url string, headers map[string]stri
 		return nil, fmt.Errorf("%w: %w", ErrRequest, err)
 	}
 
+	defaultHeaders := req.Header.Clone()
+
 	for k, v := range headers {
-		req.Header.Set(k, v)
+		defaultHeaders.Set(k, v)
 	}
+
+	req.Header = defaultHeaders
 
 	return &Request{Req: req}, nil
 }
