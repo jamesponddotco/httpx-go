@@ -77,7 +77,7 @@ func NewClientWithCache(cache pagecache.Cache) *Client {
 	return c
 }
 
-func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, error) {
 	c.initClient()
 	c.setUserAgent(req)
 
@@ -88,7 +88,7 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 	)
 
 	if c.Cache != nil {
-		key = pagecache.Key(build.Name, req.Req)
+		key = pagecache.Key(build.Name, req)
 
 		resp, err = c.Cache.Get(ctx, key)
 		if resp != nil && err == nil {
@@ -98,16 +98,16 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 
 	for i := 0; i < c.RetryPolicy.MaxRetries; i++ {
 		if i > 0 && c.RateLimiter != nil {
-			if err = c.RateLimiter.Wait(req.Req.Context()); err != nil {
+			if err = c.RateLimiter.Wait(req.Context()); err != nil {
 				return nil, fmt.Errorf("%w", err)
 			}
 		}
 
-		resp, err = c.client.Do(req.Req)
+		resp, err = c.client.Do(req)
 		if err != nil {
 			select {
-			case <-req.Req.Context().Done():
-				return nil, fmt.Errorf("%w", req.Req.Context().Err())
+			case <-req.Context().Done():
+				return nil, fmt.Errorf("%w", req.Context().Err())
 			default:
 			}
 
@@ -119,7 +119,7 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 		}
 
 		if c.RetryPolicy.ShouldRetry(resp) {
-			if err = c.RetryPolicy.Wait(req.Req.Context(), resp); err != nil {
+			if err = c.RetryPolicy.Wait(req.Context(), resp); err != nil {
 				return nil, fmt.Errorf("%w", err)
 			}
 
@@ -128,7 +128,7 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 	}
 
 	if c.Cache != nil {
-		key = pagecache.Key(build.Name, req.Req)
+		key = pagecache.Key(build.Name, req)
 
 		var (
 			ctx    = context.Background()
@@ -145,7 +145,7 @@ func (c *Client) Do(ctx context.Context, req *Request) (*http.Response, error) {
 
 // Get is a convenience method for making GET requests.
 func (c *Client) Get(ctx context.Context, uri string) (resp *http.Response, err error) {
-	req, err := NewRequest(ctx, http.MethodGet, uri, nil, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
@@ -155,7 +155,7 @@ func (c *Client) Get(ctx context.Context, uri string) (resp *http.Response, err 
 
 // Head is a convenience method for making HEAD requests.
 func (c *Client) Head(ctx context.Context, uri string) (resp *http.Response, err error) {
-	req, err := NewRequest(ctx, http.MethodHead, uri, nil, http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, uri, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
@@ -165,12 +165,12 @@ func (c *Client) Head(ctx context.Context, uri string) (resp *http.Response, err
 
 // Post is a convenience method for making POST requests.
 func (c *Client) Post(ctx context.Context, uri, contentType string, body io.Reader) (resp *http.Response, err error) {
-	req, err := NewRequest(ctx, http.MethodPost, uri, nil, body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, uri, body)
 	if err != nil {
 		return nil, fmt.Errorf("%w", err)
 	}
 
-	req.Req.Header.Set("Content-Type", contentType)
+	req.Header.Set("Content-Type", contentType)
 
 	return c.Do(ctx, req)
 }
@@ -196,8 +196,8 @@ func (c *Client) initClient() {
 }
 
 // setUserAgent sets the User-Agent header if it's not already set.
-func (c *Client) setUserAgent(req *Request) {
-	if req.Req.Header.Get("User-Agent") == "" {
-		req.Req.Header.Set("User-Agent", c.UserAgent.String())
+func (c *Client) setUserAgent(req *http.Request) {
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", c.UserAgent.String())
 	}
 }

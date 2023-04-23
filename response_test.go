@@ -51,12 +51,7 @@ func (*customReadCloser) Close() error {
 func TestReadJSON(t *testing.T) {
 	t.Parallel()
 
-	var (
-		client = httpx.NewClientWithCache(nil)
-		header = map[string]string{
-			"Accept": "application/json",
-		}
-	)
+	client := httpx.NewClientWithCache(nil)
 
 	tests := []struct {
 		name    string
@@ -129,10 +124,12 @@ func TestReadJSON(t *testing.T) {
 			var got TestStruct
 
 			if tt.give != "" {
-				req, err := httpx.NewRequest(context.Background(), http.MethodGet, tt.give, header, http.NoBody)
+				req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, tt.give, http.NoBody)
 				if err != nil {
 					t.Fatal(err)
 				}
+
+				req.Header.Set("Accept", "application/json")
 
 				resp, err := client.Do(context.Background(), req)
 				if err != nil {
