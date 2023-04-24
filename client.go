@@ -88,7 +88,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 	)
 
 	if c.Cache != nil {
-		key = pagecache.Key(build.Name, req)
+		key = c.cacheKey(req)
 
 		resp, err = c.Cache.Get(ctx, key)
 		if resp != nil && err == nil {
@@ -128,8 +128,6 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 	}
 
 	if c.Cache != nil {
-		key = pagecache.Key(build.Name, req)
-
 		var (
 			ctx    = context.Background()
 			policy = c.Cache.Policy()
@@ -209,6 +207,11 @@ func (c *Client) maxRetries() int {
 	}
 
 	return 1
+}
+
+// cacheKey returns the cache key for a request.
+func (c *Client) cacheKey(req *http.Request) string {
+	return pagecache.Key(build.Name, req)
 }
 
 // applyRateLimiter applies the rate limiter to the request.
