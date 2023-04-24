@@ -119,7 +119,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 		}
 
 		if c.RetryPolicy != nil && c.RetryPolicy.ShouldRetry(resp) {
-			if err = c.RetryPolicy.Wait(req.Context(), resp); err != nil {
+			if err = c.RetryPolicy.Wait(ctx, resp); err != nil {
 				return nil, fmt.Errorf("%w", err)
 			}
 
@@ -135,7 +135,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 			policy = c.Cache.Policy()
 		)
 
-		if err = c.Cache.Set(ctx, key, resp, policy.TTL(resp)); err != nil {
+		if err = c.Cache.Set(ctx, key, resp, policy.TTL(resp)); err != nil { //nolint:contextcheck // looks like a false positive
 			return nil, fmt.Errorf("%w", err)
 		}
 	}
