@@ -96,17 +96,11 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 		}
 	}
 
-	maxRetries := 1
-
-	if c.RetryPolicy != nil {
-		maxRetries = c.RetryPolicy.MaxRetries
-	}
+	maxRetries := c.maxRetries()
 
 	for i := 0; i < maxRetries; i++ {
-		if i > 0 && c.RateLimiter != nil {
-			if err = c.RateLimiter.Wait(req.Context()); err != nil {
-				return nil, fmt.Errorf("%w", err)
-			}
+		if err = c.applyRateLimiter(i, req); err != nil {
+			return nil, fmt.Errorf("%w", err)
 		}
 
 		resp, err = c.client.Do(req)
@@ -206,4 +200,24 @@ func (c *Client) setUserAgent(req *http.Request) {
 	if req.Header.Get("User-Agent") == "" {
 		req.Header.Set("User-Agent", c.UserAgent.String())
 	}
+}
+
+// maxRetries returns the maximum number of retries for a request.
+func (c *Client) maxRetries() int {
+	if c.RetryPolicy != nil {
+		return c.RetryPolicy.MaxRetries
+	}
+
+	return 1
+}
+
+// applyRateLimiter applies the rate limiter to the request.
+func (c *Client) applyRateLimiter(count int, req *http.Request) error {
+	if count > 0 && c.RateLimiter != nil {
+		if err := c.RateLimiter.Wait(req.Context()); err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+
+	return nil
 }
