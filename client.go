@@ -128,12 +128,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 	}
 
 	if c.Cache != nil {
-		var (
-			ctx    = context.Background()
-			policy = c.Cache.Policy()
-		)
+		policy := c.Cache.Policy()
 
-		if err = c.Cache.Set(ctx, key, resp, policy.TTL(resp)); err != nil { //nolint:contextcheck // looks like a false positive
+		if err = c.Cache.Set(ctx, key, resp, policy.TTL(resp)); err != nil {
 			return nil, fmt.Errorf("%w", err)
 		}
 	}
