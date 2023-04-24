@@ -96,7 +96,13 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 		}
 	}
 
-	for i := 0; i < c.RetryPolicy.MaxRetries; i++ {
+	maxRetries := 1
+
+	if c.RetryPolicy != nil {
+		maxRetries = c.RetryPolicy.MaxRetries
+	}
+
+	for i := 0; i < maxRetries; i++ {
 		if i > 0 && c.RateLimiter != nil {
 			if err = c.RateLimiter.Wait(req.Context()); err != nil {
 				return nil, fmt.Errorf("%w", err)
@@ -118,7 +124,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 			return nil, fmt.Errorf("%w", err)
 		}
 
-		if c.RetryPolicy.ShouldRetry(resp) {
+		if c.RetryPolicy != nil && c.RetryPolicy.ShouldRetry(resp) {
 			if err = c.RetryPolicy.Wait(req.Context(), resp); err != nil {
 				return nil, fmt.Errorf("%w", err)
 			}
