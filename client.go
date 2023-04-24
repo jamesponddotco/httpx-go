@@ -207,7 +207,7 @@ func (c *Client) maxRetries() int {
 }
 
 // cacheKey returns the cache key for a request.
-func (c *Client) cacheKey(req *http.Request) string {
+func (*Client) cacheKey(req *http.Request) string {
 	return pagecache.Key(build.Name, req)
 }
 
