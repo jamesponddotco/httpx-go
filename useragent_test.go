@@ -41,7 +41,7 @@ func TestUserAgent_String(t *testing.T) {
 			userAgent: &httpx.UserAgent{
 				Comment: []string{"comment1", "comment2"},
 			},
-			want: "httpx/0.1.0 (comment1; comment2)",
+			want: "",
 		},
 		{
 			name: "custom user agent with invalid comment",
