@@ -48,14 +48,7 @@ func (ua *UserAgent) String() string {
 	var builder strings.Builder
 
 	token := ua.Token
-	if token == "" {
-		token = build.Name
-	}
-
 	version := ua.Version
-	if version == "" {
-		version = build.Version
-	}
 
 	estimatedLength := len(token) + len(version) + 2 // 2 is for the token-version separator
 
