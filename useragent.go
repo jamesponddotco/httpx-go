@@ -60,7 +60,7 @@ func (ua *UserAgent) String() string {
 	estimatedLength := len(token) + len(version) + 2 // 2 is for the token-version separator
 
 	for _, comment := range ua.Comment {
-		estimatedLength += len(comment) + len(separator.Collon+separator.Space) + 2 // 2 is for the parentheses
+		estimatedLength += len(comment) + len(separator.Colon+separator.Space) + 2 // 2 is for the parentheses
 	}
 
 	builder.Grow(estimatedLength)
@@ -74,7 +74,7 @@ func (ua *UserAgent) String() string {
 
 		for i, comment := range ua.Comment {
 			if i > 0 {
-				builder.WriteString(separator.Collon + separator.Space)
+				builder.WriteString(separator.Colon + separator.Space)
 			}
 
 			for _, r := range comment {

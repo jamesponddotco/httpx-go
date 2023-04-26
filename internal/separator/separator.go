@@ -3,7 +3,7 @@ package separator
 
 const (
 	Space            string = " "
-	Collon           string = ";"
+	Colon            string = ";"
 	ForwardSlash     string = "/"
 	OpenParenthesis  string = "("
 	CloseParenthesis string = ")"
