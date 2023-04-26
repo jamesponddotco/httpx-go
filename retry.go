@@ -3,13 +3,17 @@ package httpx
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
+	"git.sr.ht/~jamesponddotco/xstd-go/xcrypto/xrand"
 	"git.sr.ht/~jamesponddotco/xstd-go/xerrors"
 )
+
+// _jitterFraction is the fraction of the jitter to use when calculating the
+// jittered delay.
+const _jitterFraction float64 = 0.25
 
 // ErrRetryCanceled is returned when the request is canceled while waiting to retry.
 const ErrRetryCanceled xerrors.Error = "retry canceled"
@@ -116,5 +120,12 @@ func (p *RetryPolicy) Wait(ctx context.Context, resp *http.Response) error {
 
 // jitter calculates a jittered duration based on the specified duration.
 func (*RetryPolicy) jitter(delay time.Duration) time.Duration {
-	return time.Duration(rand.Float64() * float64(delay) * 0.25) //nolint:gosec // jitter doesn't require cryptographically secure randomness
+	var (
+		jitterRange   = int64(float64(delay) * _jitterFraction)
+		minJitter     = int64(delay) - jitterRange
+		maxJitter     = int64(delay) + jitterRange
+		jitteredDelay = minJitter + int64(xrand.IntChaChaCha(int(maxJitter-minJitter), nil))
+	)
+
+	return time.Duration(jitteredDelay)
 }
