@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"git.sr.ht/~jamesponddotco/httpx-go"
@@ -210,7 +212,16 @@ func TestDrainResponseBody(t *testing.T) {
 func TestIsSuccess(t *testing.T) {
 	t.Parallel()
 
-	client := httpx.NewClientWithCache(nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		statusCode, _ := strconv.Atoi(r.URL.Path[1:])
+		w.WriteHeader(statusCode)
+	})
+
+	server := httptest.NewServer(mux)
+	defer t.Cleanup(server.Close)
+
+	client := httpx.NewClient()
 
 	tests := []struct {
 		name string
@@ -219,17 +230,17 @@ func TestIsSuccess(t *testing.T) {
 	}{
 		{
 			name: "200",
-			give: "https://httpstat.us/200",
+			give: fmt.Sprintf("%s/200", server.URL),
 			want: true,
 		},
 		{
 			name: "400",
-			give: "https://httpstat.us/400",
+			give: fmt.Sprintf("%s/400", server.URL),
 			want: false,
 		},
 		{
 			name: "500",
-			give: "https://httpstat.us/500",
+			give: fmt.Sprintf("%s/500", server.URL),
 			want: false,
 		},
 	}
