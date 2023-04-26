@@ -88,7 +88,10 @@ func (p *RetryPolicy) RetryAfter(resp *http.Response) time.Duration {
 
 	jitteredDelay := delay + p.jitter(delay)
 
-	if jitteredDelay > p.MaxRetryDelay {
+	switch {
+	case jitteredDelay < p.MinRetryDelay:
+		jitteredDelay = p.MinRetryDelay
+	case jitteredDelay > p.MaxRetryDelay:
 		jitteredDelay = p.MaxRetryDelay
 	}
 
