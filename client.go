@@ -44,12 +44,18 @@ type Client struct {
 	// Cache is an optional cache mechanism to store HTTP responses.
 	Cache pagecache.Cache
 
+	// Logger is the logger to use for logging requests when debugging.
+	Logger Logger
+
 	// Timeout is the timeout for all requests made by the client, overriding
 	// the default value set in the underlying http.Client.
 	Timeout time.Duration
 
-	// mu is a mutex for initializing the client.
-	mu sync.Mutex
+	// Debug specifies whether or not to enable debug logging.
+	Debug bool
+
+	// initOnce ensures the client is initialized only once.
+	initOnce sync.Once
 }
 
 // NewClient returns a new Client with default settings.
@@ -87,11 +93,14 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 		err  error
 	)
 
+	c.debugf("[DEBUG] Starting request %s %s", req.Method, req.URL)
+
 	if c.Cache != nil {
 		key = c.cacheKey(req)
 
 		resp, err = c.Cache.Get(ctx, key)
 		if resp != nil && err == nil {
+			c.debugf("[DEBUG] Cache hit for request: %s %s", req.Method, req.URL)
 			return resp, nil
 		}
 	}
@@ -99,6 +108,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 	maxRetries := c.maxRetries()
 
 	for i := 0; i < maxRetries; i++ {
+		c.debugf("[DEBUG] Attempt %d for request: %s %s", i+1, req.Method, req.URL)
+
 		if err = c.applyRateLimiter(i, req); err != nil {
 			return nil, fmt.Errorf("%w", err)
 		}
@@ -133,6 +144,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 		if err = c.Cache.Set(ctx, key, resp, policy.TTL(resp)); err != nil {
 			return nil, fmt.Errorf("%w", err)
 		}
+
+		c.debugf("[DEBUG] Cache set for request: %s %s", req.Method, req.URL)
 	}
 
 	return resp, nil
@@ -178,16 +191,19 @@ func (c *Client) PostForm(ctx context.Context, uri string, data url.Values) (res
 // initClient initializes the underlying http.Client if none has been set and
 // set the timeout if it's not zero.
 func (c *Client) initClient() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.initOnce.Do(func() {
+		if c.client == nil {
+			c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
+		}
 
-	if c.client == nil {
-		c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
-	}
+		if c.client.Timeout == 0 && c.Timeout != 0 {
+			c.client.Timeout = c.Timeout
+		}
 
-	if c.client.Timeout == 0 && c.Timeout != 0 {
-		c.client.Timeout = c.Timeout
-	}
+		if c.Logger == nil && c.Debug {
+			c.Logger = DefaultLogger()
+		}
+	})
 }
 
 // setUserAgent sets the User-Agent header if it's not already set.
@@ -214,10 +230,19 @@ func (*Client) cacheKey(req *http.Request) string {
 // applyRateLimiter applies the rate limiter to the request.
 func (c *Client) applyRateLimiter(count int, req *http.Request) error {
 	if count > 0 && c.RateLimiter != nil {
+		c.debugf("[DEBUG] Applying rate limiter for request: %s %s", req.Method, req.URL)
+
 		if err := c.RateLimiter.Wait(req.Context()); err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	}
 
 	return nil
+}
+
+// debugf is a convenience method for logging debug messages.
+func (c *Client) debugf(format string, args ...any) {
+	if c.Debug && c.Logger != nil {
+		c.Logger.Printf(format, args...)
+	}
 }
