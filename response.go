@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,9 @@ import (
 const (
 	// ErrCannotDecodeJSON is returned when a JSON response cannot be decoded.
 	ErrCannotDecodeJSON xerrors.Error = "cannot decode JSON response"
+
+	// ErrCannotEncodeJSON is returned when a JSON request cannot be encoded.
+	ErrCannotEncodeJSON xerrors.Error = "cannot encode JSON request"
 
 	// ErrCannotDrainResponse is returned when a response body cannot be drained.
 	ErrCannotDrainResponse xerrors.Error = "cannot drain response body"
@@ -31,6 +35,22 @@ func ReadJSON(resp *http.Response, val any) error {
 	}
 
 	return nil
+}
+
+// WriteJSON writes a given struct to a JSON payload that can be used for HTTP
+// requests. The provided val parameter should be a pointer to a struct where
+// the JSON data will be marshaled.
+func WriteJSON(val any) (*bytes.Buffer, error) {
+	var (
+		payload *bytes.Buffer
+		encoder = json.NewEncoder(payload)
+	)
+
+	if err := encoder.Encode(val); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrCannotEncodeJSON, err)
+	}
+
+	return payload, nil
 }
 
 // DrainResponseBody drains the response body until EOF and closes it. It
