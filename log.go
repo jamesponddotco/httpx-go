@@ -1,8 +1,7 @@
 package httpx
 
 import (
-	"log"
-	"os"
+	"git.sr.ht/~jamesponddotco/xstd-go/xlog"
 )
 
 // Logger defines the interface for logging. It is basically a thin wrapper
@@ -12,6 +11,6 @@ type Logger interface {
 }
 
 // DefaultLogger is the default logger used by HTTPX when Client.Debug is true.
-func DefaultLogger() *log.Logger {
-	return log.New(os.Stderr, "", log.LstdFlags)
+func DefaultLogger() Logger {
+	return xlog.DefaultZeroLogger
 }
