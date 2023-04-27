@@ -136,6 +136,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request) (*http.Response, err
 
 			continue
 		}
+
+		break
 	}
 
 	if c.Cache != nil {
