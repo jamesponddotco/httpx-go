@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"git.sr.ht/~jamesponddotco/httpx-go/internal/build"
-	"git.sr.ht/~jamesponddotco/httpx-go/internal/httpclient"
 	"git.sr.ht/~jamesponddotco/pagecache-go"
 	"git.sr.ht/~jamesponddotco/pagecache-go/memorycachex"
 	"golang.org/x/time/rate"
@@ -41,6 +40,19 @@ type Client struct {
 	// UserAgent is the User-Agent header to use for all requests.
 	UserAgent *UserAgent
 
+	// Transport specifies the mechanism by which individual HTTP requests are
+	// made. If nil, DefaultTransport is used.
+	Transport http.RoundTripper
+
+	// CheckRedirect specifies the policy for handling redirects. If
+	// CheckRedirect is nil, the Client uses its default policy, which is to
+	// not follow redirects at all.
+	CheckRedirect func(req *http.Request, via []*http.Request) error
+
+	// Jar specifies the cookie jar. If nil, cookies are only sent if they are
+	// explicitly set on the Request.
+	Jar http.CookieJar
+
 	// Cache is an optional cache mechanism to store HTTP responses.
 	Cache pagecache.Cache
 
@@ -61,7 +73,13 @@ type Client struct {
 // NewClient returns a new Client with default settings.
 func NewClient() *Client {
 	return &Client{
-		client:      httpclient.NewClient(DefaultTimeout, DefaultTransport()),
+		client: &http.Client{
+			Transport: DefaultTransport(),
+			Timeout:   DefaultTimeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
 		RateLimiter: rate.NewLimiter(rate.Limit(2), 1),
 		RetryPolicy: DefaultRetryPolicy(),
 		UserAgent:   DefaultUserAgent(),
@@ -195,7 +213,23 @@ func (c *Client) PostForm(ctx context.Context, uri string, data url.Values) (res
 func (c *Client) initClient() {
 	c.initOnce.Do(func() {
 		if c.client == nil {
-			c.client = httpclient.NewClient(DefaultTimeout, DefaultTransport())
+			c.client = &http.Client{
+				Transport: DefaultTransport(),
+				Timeout:   DefaultTimeout,
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					return http.ErrUseLastResponse
+				},
+			}
+		}
+
+		if c.Transport == nil {
+			c.Transport = DefaultTransport()
+		}
+
+		if c.CheckRedirect == nil {
+			c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}
 		}
 
 		if c.client.Timeout == 0 && c.Timeout != 0 {
