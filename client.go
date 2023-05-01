@@ -279,6 +279,6 @@ func (c *Client) applyRateLimiter(count int, req *http.Request) error {
 // debugf is a convenience method for logging debug messages.
 func (c *Client) debugf(format string, args ...any) {
 	if c.Debug && c.Logger != nil {
-		c.Logger.Printf(format, args...)
+		c.Logger.Printf(format+"\n", args...)
 	}
 }
