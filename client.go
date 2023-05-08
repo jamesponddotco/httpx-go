@@ -222,14 +222,16 @@ func (c *Client) initClient() {
 			}
 		}
 
-		if c.Transport == nil {
-			c.Transport = DefaultTransport()
+		if c.Transport != nil {
+			c.client.Transport = c.Transport
 		}
 
-		if c.CheckRedirect == nil {
-			c.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			}
+		if c.CheckRedirect != nil {
+			c.client.CheckRedirect = c.CheckRedirect
+		}
+
+		if c.Jar != nil {
+			c.client.Jar = c.Jar
 		}
 
 		if c.client.Timeout == 0 && c.Timeout != 0 {
