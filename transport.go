@@ -32,6 +32,8 @@ func DefaultTransport() *http.Transport {
 			CurvePreferences: []tls.CurveID{
 				tls.X25519,
 				tls.CurveP256,
+				tls.CurveP521,
+				tls.CurveP384,
 			},
 			SessionTicketsDisabled: false,
 			ClientSessionCache:     tls.NewLRUClientSessionCache(64),
