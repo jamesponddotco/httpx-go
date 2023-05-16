@@ -159,6 +159,61 @@ func TestReadJSON(t *testing.T) {
 	}
 }
 
+func TestWriteJSON(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		give    interface{}
+		want    *bytes.Buffer
+		wantErr bool
+	}{
+		{
+			name: "valid data",
+			give: &TestSlides{
+				Title: "test",
+				Type:  "example",
+				Items: []string{"item1", "item2"},
+			},
+			want:    bytes.NewBuffer([]byte(`{"title":"test","type":"example","items":["item1","item2"]}` + "\n")),
+			wantErr: false,
+		},
+		{
+			name:    "nil data",
+			give:    nil,
+			want:    nil,
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := httpx.WriteJSON(tt.give)
+
+			if tt.wantErr {
+				if err == nil {
+					t.Fatal("expected error, got nil")
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				gotStr := got.String()
+				wantStr := tt.want.String()
+
+				if gotStr != wantStr {
+					t.Errorf("got: %v, want: %v", gotStr, wantStr)
+				}
+			}
+		})
+	}
+}
+
 func TestDrainResponseBody(t *testing.T) {
 	t.Parallel()
 

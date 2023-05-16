@@ -22,6 +22,9 @@ const (
 
 	// ErrCannotCloseResponse is returned when a response body cannot be closed.
 	ErrCannotCloseResponse xerrors.Error = "cannot close response body"
+
+	// ErrNilVal is returned when a nil value is passed to a function.
+	ErrNilValue xerrors.Error = "val cannot be nil"
 )
 
 // ReadJSON reads the body of an HTTP response and unmarshals it into the given
@@ -41,8 +44,12 @@ func ReadJSON(resp *http.Response, val any) error {
 // requests. The provided val parameter should be a pointer to a struct where
 // the JSON data will be marshaled.
 func WriteJSON(val any) (*bytes.Buffer, error) {
+	if val == nil {
+		return nil, ErrNilValue
+	}
+
 	var (
-		payload *bytes.Buffer
+		payload = &bytes.Buffer{}
 		encoder = json.NewEncoder(payload)
 	)
 
