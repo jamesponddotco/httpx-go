@@ -3,9 +3,13 @@
 [![Go Documentation](https://godocs.io/git.sr.ht/~jamesponddotco/httpx-go?status.svg)](https://godocs.io/git.sr.ht/~jamesponddotco/httpx-go)
 [![Go Report Card](https://goreportcard.com/badge/git.sr.ht/~jamesponddotco/httpx-go)](https://goreportcard.com/report/git.sr.ht/~jamesponddotco/httpx-go)
 
-> **Note**: This library is under active development and most pieces
-> haven't been tested yet. **Do not use in production** until a tagged
-> release is out.
+## Status
+
+No longer maintained. This was never a good module to begin with, but
+the good parts have been improved upon and moved to
+[xstd](https://sr.ht/~jamesponddotco/xstd-go/).
+
+## Archive
 
 Package `httpx` is an alternative HTTP client for [the Go
 language](https://go.dev/) that extends [the default library's HTTP
